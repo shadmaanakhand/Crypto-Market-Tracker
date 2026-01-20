@@ -3,6 +3,7 @@
 A real-time cryptocurrency dashboard built with React, Tailwind CSS, and the CoinGecko API.
 It displays live market data, interactive price charts, and allows users to search and track cryptocurrencies in a clean, responsive interface.
 
+<img width="2559" height="1389" alt="crypto" src="https://github.com/user-attachments/assets/7efd591b-ecbe-4e3a-8b6e-ecf8b79f3325" />
 ## Features
 
 * Live prices for the top 100 cryptocurrencies
