@@ -1,285 +1,3 @@
-// import React, { useState, useEffect } from 'react';
-// import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
-// import { TrendingUp, TrendingDown, Search, RefreshCw } from 'lucide-react';
-
-// const CryptoDashboard = () => {
-//   const [coins, setCoins] = useState([]);
-//   const [filteredCoins, setFilteredCoins] = useState([]);
-//   const [searchTerm, setSearchTerm] = useState('');
-//   const [loading, setLoading] = useState(true);
-//   const [selectedCoin, setSelectedCoin] = useState(null);
-//   const [chartData, setChartData] = useState([]);
-//   const [chartDays, setChartDays] = useState(7);
-//   const [lastUpdate, setLastUpdate] = useState(new Date());
-
-//   useEffect(() => {
-//     fetchCoins();
-//     const interval = setInterval(fetchCoins, 60000);
-//     return () => clearInterval(interval);
-//   }, []);
-
-//   useEffect(() => {
-//     const filtered = coins.filter(coin =>
-//       coin.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-//       coin.symbol.toLowerCase().includes(searchTerm.toLowerCase())
-//     );
-//     setFilteredCoins(filtered);
-//   }, [searchTerm, coins]);
-
-//   const fetchCoins = async () => {
-//     try {
-//       const response = await fetch(
-//         'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=20&page=1&sparkline=false&price_change_percentage=24h'
-//       );
-//       const data = await response.json();
-//       setCoins(data);
-//       setFilteredCoins(data);
-//       setLoading(false);
-//       setLastUpdate(new Date());
-//     } catch (error) {
-//       console.error('Error fetching coins:', error);
-//       setLoading(false);
-//     }
-//   };
-
-//   const fetchChartData = async (coinId, days) => {
-//     try {
-//       const response = await fetch(
-//         `https://api.coingecko.com/api/v3/coins/${coinId}/market_chart?vs_currency=usd&days=${days}`
-//       );
-//       const data = await response.json();
-//       const formattedData = data.prices.map(([timestamp, price]) => ({
-//         date: new Date(timestamp).toLocaleDateString(),
-//         price: price
-//       }));
-//       setChartData(formattedData);
-//     } catch (error) {
-//       console.error('Error fetching chart data:', error);
-//     }
-//   };
-
-//   const handleCoinClick = (coin) => {
-//     setSelectedCoin(coin);
-//     fetchChartData(coin.id, chartDays);
-//   };
-
-//   const handleChartDaysChange = (days) => {
-//     setChartDays(days);
-//     if (selectedCoin) {
-//       fetchChartData(selectedCoin.id, days);
-//     }
-//   };
-
-//   const formatPrice = (price) => {
-//     if (price >= 1) {
-//       return `$${price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-//     }
-//     return `$${price.toFixed(6)}`;
-//   };
-
-//   const formatLargeNumber = (num) => {
-//     if (num >= 1e12) return `$${(num / 1e12).toFixed(2)}T`;
-//     if (num >= 1e9) return `$${(num / 1e9).toFixed(2)}B`;
-//     if (num >= 1e6) return `$${(num / 1e6).toFixed(2)}M`;
-//     return `$${num.toLocaleString()}`;
-//   };
-
-//   if (loading) {
-//     return (
-//       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
-//         <div className="text-white text-2xl">Loading crypto data...</div>
-//       </div>
-//     );
-//   }
-
-//   return (
-//     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white p-4 md:p-8">
-//       <div className="max-w-7xl mx-auto">
-//         {/* Header */}
-//         <div className="mb-8">
-//           <h1 className="text-4xl md:text-5xl font-bold mb-2 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-//             Crypto Dashboard
-//           </h1>
-//           <p className="text-gray-400">Real-time cryptocurrency prices and market data</p>
-//           <div className="flex items-center gap-2 mt-2 text-sm text-gray-500">
-//             <span>Last updated: {lastUpdate.toLocaleTimeString()}</span>
-//             <button
-//               onClick={fetchCoins}
-//               className="p-1 hover:bg-white/10 rounded transition-colors"
-//               title="Refresh data"
-//             >
-//               <RefreshCw className="w-4 h-4" />
-//             </button>
-//           </div>
-//         </div>
-
-//         {/* Search Bar */}
-//         <div className="mb-6 relative">
-//           <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-//           <input
-//             type="text"
-//             placeholder="Search cryptocurrencies..."
-//             value={searchTerm}
-//             onChange={(e) => setSearchTerm(e.target.value)}
-//             className="w-full bg-white/10 backdrop-blur-md border border-white/20 rounded-lg py-3 pl-12 pr-4 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
-//           />
-//         </div>
-
-//         {/* Chart Modal */}
-//         {selectedCoin && (
-//           <div className="mb-6 bg-white/10 backdrop-blur-md border border-white/20 rounded-lg p-6">
-//             <div className="flex justify-between items-start mb-4">
-//               <div>
-//                 <div className="flex items-center gap-3 mb-2">
-//                   <img src={selectedCoin.image} alt={selectedCoin.name} className="w-10 h-10" />
-//                   <div>
-//                     <h2 className="text-2xl font-bold">{selectedCoin.name}</h2>
-//                     <p className="text-gray-400 uppercase">{selectedCoin.symbol}</p>
-//                   </div>
-//                 </div>
-//                 <p className="text-3xl font-bold">{formatPrice(selectedCoin.current_price)}</p>
-//               </div>
-//               <button
-//                 onClick={() => setSelectedCoin(null)}
-//                 className="text-gray-400 hover:text-white transition-colors"
-//               >
-//                 ✕
-//               </button>
-//             </div>
-
-//             <div className="flex gap-2 mb-4">
-//               {[7, 30, 90].map((days) => (
-//                 <button
-//                   key={days}
-//                   onClick={() => handleChartDaysChange(days)}
-//                   className={`px-4 py-2 rounded-lg transition-colors ${
-//                     chartDays === days
-//                       ? 'bg-purple-600 text-white'
-//                       : 'bg-white/10 text-gray-400 hover:bg-white/20'
-//                   }`}
-//                 >
-//                   {days}D
-//                 </button>
-//               ))}
-//             </div>
-
-//             <ResponsiveContainer width="100%" height={300}>
-//               <LineChart data={chartData}>
-//                 <XAxis
-//                   dataKey="date"
-//                   stroke="#9ca3af"
-//                   tick={{ fill: '#9ca3af' }}
-//                   tickFormatter={(value) => value.split('/')[0]}
-//                 />
-//                 <YAxis
-//                   stroke="#9ca3af"
-//                   tick={{ fill: '#9ca3af' }}
-//                   tickFormatter={(value) => `$${value.toLocaleString()}`}
-//                 />
-//                 <Tooltip
-//                   contentStyle={{
-//                     backgroundColor: 'rgba(0, 0, 0, 0.8)',
-//                     border: '1px solid rgba(255, 255, 255, 0.2)',
-//                     borderRadius: '8px',
-//                     color: 'white'
-//                   }}
-//                   formatter={(value) => [formatPrice(value), 'Price']}
-//                 />
-//                 <Line
-//                   type="monotone"
-//                   dataKey="price"
-//                   stroke="#a855f7"
-//                   strokeWidth={2}
-//                   dot={false}
-//                 />
-//               </LineChart>
-//             </ResponsiveContainer>
-//           </div>
-//         )}
-
-//         {/* Coins Table */}
-//         <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-lg overflow-hidden">
-//           <div className="overflow-x-auto">
-//             <table className="w-full">
-//               <thead className="bg-white/5">
-//                 <tr>
-//                   <th className="text-left p-4 font-semibold text-gray-300">#</th>
-//                   <th className="text-left p-4 font-semibold text-gray-300">Coin</th>
-//                   <th className="text-right p-4 font-semibold text-gray-300">Price</th>
-//                   <th className="text-right p-4 font-semibold text-gray-300">24h Change</th>
-//                   <th className="text-right p-4 font-semibold text-gray-300 hidden md:table-cell">Market Cap</th>
-//                   <th className="text-right p-4 font-semibold text-gray-300 hidden lg:table-cell">Volume (24h)</th>
-//                 </tr>
-//               </thead>
-//               <tbody>
-//                 {filteredCoins.map((coin) => (
-//                   <tr
-//                     key={coin.id}
-//                     onClick={() => handleCoinClick(coin)}
-//                     className="border-t border-white/10 hover:bg-white/5 cursor-pointer transition-colors"
-//                   >
-//                     <td className="p-4 text-gray-400">{coin.market_cap_rank}</td>
-//                     <td className="p-4">
-//                       <div className="flex items-center gap-3">
-//                         <img src={coin.image} alt={coin.name} className="w-8 h-8" />
-//                         <div>
-//                           <div className="font-semibold">{coin.name}</div>
-//                           <div className="text-sm text-gray-400 uppercase">{coin.symbol}</div>
-//                         </div>
-//                       </div>
-//                     </td>
-//                     <td className="p-4 text-right font-semibold">
-//                       {formatPrice(coin.current_price)}
-//                     </td>
-//                     <td className="p-4 text-right">
-//                       <div
-//                         className={`flex items-center justify-end gap-1 ${
-//                           coin.price_change_percentage_24h >= 0
-//                             ? 'text-green-400'
-//                             : 'text-red-400'
-//                         }`}
-//                       >
-//                         {coin.price_change_percentage_24h >= 0 ? (
-//                           <TrendingUp className="w-4 h-4" />
-//                         ) : (
-//                           <TrendingDown className="w-4 h-4" />
-//                         )}
-//                         <span className="font-semibold">
-//                           {Math.abs(coin.price_change_percentage_24h).toFixed(2)}%
-//                         </span>
-//                       </div>
-//                     </td>
-//                     <td className="p-4 text-right text-gray-300 hidden md:table-cell">
-//                       {formatLargeNumber(coin.market_cap)}
-//                     </td>
-//                     <td className="p-4 text-right text-gray-300 hidden lg:table-cell">
-//                       {formatLargeNumber(coin.total_volume)}
-//                     </td>
-//                   </tr>
-//                 ))}
-//               </tbody>
-//             </table>
-//           </div>
-//         </div>
-
-//         {filteredCoins.length === 0 && (
-//           <div className="text-center py-12 text-gray-400">
-//             No cryptocurrencies found matching "{searchTerm}"
-//           </div>
-//         )}
-
-//         {/* Footer */}
-//         <div className="mt-8 text-center text-gray-500 text-sm">
-//           <p>Data provided by CoinGecko API • Updates every 60 seconds</p>
-//           <p className="mt-1">Click on any coin to view its price chart</p>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default CryptoDashboard;
-
 import React, { useState, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 import { TrendingUp, TrendingDown, Search, RefreshCw, Star, ArrowUp, Moon, Sun, ChevronUp, BarChart3 } from 'lucide-react';
@@ -289,6 +7,9 @@ const CryptoDashboard = () => {
   const [filteredCoins, setFilteredCoins] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
+  const [searchResults, setSearchResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [showSearchDropdown, setShowSearchDropdown] = useState(false);
   const [selectedCoin, setSelectedCoin] = useState(null);
   const [chartData, setChartData] = useState([]);
   const [chartDays, setChartDays] = useState(7);
@@ -333,11 +54,16 @@ const CryptoDashboard = () => {
       return sortConfig.direction === 'asc' ? aVal - bVal : bVal - aVal;
     });
     
-    const filtered = sorted.filter(coin =>
-      coin.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      coin.symbol.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-    setFilteredCoins(filtered);
+    if (searchTerm.trim() === '') {
+      setFilteredCoins(sorted);
+      setShowSearchDropdown(false);
+    } else {
+      const filtered = sorted.filter(coin =>
+        coin.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        coin.symbol.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      setFilteredCoins(filtered);
+    }
   }, [searchTerm, coins, sortConfig]);
 
   const fetchAllData = async () => {
@@ -357,7 +83,7 @@ const CryptoDashboard = () => {
   const fetchCoins = async () => {
     try {
       const response = await fetch(
-        'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=20&page=1&sparkline=true&price_change_percentage=24h,7d'
+        'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=1&sparkline=true&price_change_percentage=24h,7d'
       );
       const data = await response.json();
       setCoins(data);
@@ -395,6 +121,63 @@ const CryptoDashboard = () => {
       setTrendingCoins(data.coins.slice(0, 5));
     } catch (error) {
       console.error('Error fetching trending:', error);
+    }
+  };
+
+  const searchAllCoins = async (query) => {
+    if (query.trim().length < 2) {
+      setSearchResults([]);
+      setShowSearchDropdown(false);
+      return;
+    }
+
+    setIsSearching(true);
+    try {
+      const response = await fetch(`https://api.coingecko.com/api/v3/search?query=${encodeURIComponent(query)}`);
+      const data = await response.json();
+      setSearchResults(data.coins.slice(0, 10));
+      setShowSearchDropdown(true);
+    } catch (error) {
+      console.error('Error searching coins:', error);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  const handleSearchChange = (e) => {
+    const value = e.target.value;
+    setSearchTerm(value);
+    searchAllCoins(value);
+  };
+
+  const addCoinFromSearch = async (coinId) => {
+    try {
+      const response = await fetch(
+        `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${coinId}&sparkline=true&price_change_percentage=24h,7d`
+      );
+      const data = await response.json();
+      
+      if (data.length > 0) {
+        const newCoin = data[0];
+        
+        if (!coins.find(c => c.id === newCoin.id)) {
+          setCoins(prev => [newCoin, ...prev]);
+          if (newCoin.sparkline_in_7d?.price) {
+            setSparklines(prev => ({
+              ...prev,
+              [newCoin.id]: newCoin.sparkline_in_7d.price
+            }));
+          }
+        }
+        
+        setSearchTerm('');
+        setSearchResults([]);
+        setShowSearchDropdown(false);
+        
+        handleCoinClick(newCoin);
+      }
+    } catch (error) {
+      console.error('Error adding coin:', error);
     }
   };
 
@@ -618,11 +401,52 @@ const CryptoDashboard = () => {
             <Search className={`absolute left-4 top-1/2 transform -translate-y-1/2 ${darkMode ? 'text-gray-400' : 'text-gray-600'} w-5 h-5`} />
             <input
               type="text"
-              placeholder="Search cryptocurrencies..."
+              placeholder="Search all 10,000+ cryptocurrencies..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={handleSearchChange}
+              onFocus={() => searchTerm.length >= 2 && setShowSearchDropdown(true)}
               className={`w-full ${darkMode ? 'bg-white/10 border-white/20 text-white placeholder-gray-400' : 'bg-white/60 border-black/10 text-gray-900 placeholder-gray-500'} backdrop-blur-md border rounded-lg py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-purple-500`}
             />
+            {isSearching && (
+              <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
+                <RefreshCw className="w-5 h-5 animate-spin text-purple-500" />
+              </div>
+            )}
+            
+            {/* Search Dropdown */}
+            {showSearchDropdown && searchResults.length > 0 && (
+              <div className={`absolute top-full left-0 right-0 mt-2 ${darkMode ? 'bg-slate-800' : 'bg-white'} border ${darkMode ? 'border-white/20' : 'border-black/10'} rounded-lg shadow-2xl max-h-96 overflow-y-auto z-50`}>
+                {searchResults.map((coin) => (
+                  <div
+                    key={coin.id}
+                    onClick={() => addCoinFromSearch(coin.id)}
+                    className={`flex items-center gap-3 p-3 cursor-pointer transition-colors ${darkMode ? 'hover:bg-white/10' : 'hover:bg-gray-100'} border-b ${darkMode ? 'border-white/10' : 'border-gray-200'} last:border-b-0`}
+                  >
+                    {coin.thumb && <img src={coin.thumb} alt={coin.name} className="w-8 h-8" />}
+                    <div className="flex-1">
+                      <div className="font-semibold">{coin.name}</div>
+                      <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'} uppercase`}>{coin.symbol}</div>
+                    </div>
+                    {coin.market_cap_rank && (
+                      <div className={`text-sm ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                        #{coin.market_cap_rank}
+                      </div>
+                    )}
+                  </div>
+                ))}
+                <div className={`p-3 text-center text-sm ${darkMode ? 'text-gray-500' : 'text-gray-600'} border-t ${darkMode ? 'border-white/10' : 'border-gray-200'}`}>
+                  Click any coin to view details and add to your list
+                </div>
+              </div>
+            )}
+            
+            {showSearchDropdown && searchTerm.length >= 2 && searchResults.length === 0 && !isSearching && (
+              <div className={`absolute top-full left-0 right-0 mt-2 ${darkMode ? 'bg-slate-800' : 'bg-white'} border ${darkMode ? 'border-white/20' : 'border-black/10'} rounded-lg shadow-2xl p-4 z-50`}>
+                <p className={`text-center ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                  No cryptocurrencies found for "{searchTerm}"
+                </p>
+              </div>
+            )}
           </div>
           <button
             onClick={() => {
@@ -918,6 +742,7 @@ const CryptoDashboard = () => {
         {/* Footer */}
         <div className={`mt-8 text-center ${darkMode ? 'text-gray-500' : 'text-gray-600'} text-sm`}>
           <p>Data provided by CoinGecko API • Updates every 60 seconds</p>
+          <p className="mt-1">🔍 Search any cryptocurrency from 10,000+ available coins</p>
           <p className="mt-1">Click on any coin to view its price chart • Use Compare Mode to compare two coins</p>
           <p className="mt-1">⭐ Star your favorite coins to track them easily</p>
         </div>
