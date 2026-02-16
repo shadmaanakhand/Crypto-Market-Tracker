@@ -1,4 +1,4 @@
-# Crypto Dashboard
+# CoinView
 
 A real-time cryptocurrency dashboard built with React, Tailwind CSS, and the CoinGecko API.
 It displays live market data, interactive price charts, and allows users to search and track cryptocurrencies in a clean, responsive interface.
